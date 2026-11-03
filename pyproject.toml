@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vixy-context-engine"
+version = "0.1.0"
+description = "Ingestion and short-term context layer for Vixy (perception -> active agent / dreamer)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2.6"]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn>=0.27"]
+dev = ["pytest>=8", "httpx>=0.27", "fastapi>=0.110"]
+
+[project.scripts]
+context-engine-demo = "context_engine.demo:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+context_engine = ["fixtures/*.jsonl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
