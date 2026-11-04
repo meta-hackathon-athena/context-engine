@@ -153,6 +153,19 @@ class EventStore:
             params.append(end_us)
         return self._fetch(sql + " ORDER BY start_us, available_us, kind, event_id", params)
 
+    def get(self, event_id: str) -> Optional[StoredEvent]:
+        rows = self._fetch(f"SELECT {_COLUMNS} FROM events WHERE event_id = ?", [event_id])
+        return rows[0] if rows else None
+
+    def query_after_seq(self, session_id: str, after_seq: int, limit: Optional[int] = None) -> list[StoredEvent]:
+        """Events with ingest_seq > after_seq, in ingestion order (consumer replay)."""
+        sql = f"SELECT {_COLUMNS} FROM events WHERE session_id = ? AND ingest_seq > ? ORDER BY ingest_seq"
+        params: list[object] = [session_id, after_seq]
+        if limit is not None:
+            sql += " LIMIT ?"
+            params.append(limit)
+        return self._fetch(sql, params)
+
     def count(self, session_id: Optional[str] = None) -> int:
         with self._lock:
             if session_id is None:

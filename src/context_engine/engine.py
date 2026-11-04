@@ -213,6 +213,21 @@ class ContextEngine:
             raise ValueError("end_time must be >= start_time")
         return [_to_record(row) for row in self.store.query_range(session_id, start_us, end_us)]
 
+    def get_event_record(self, event_id: str) -> Optional[DreamerEventRecord]:
+        """One persisted event by id (provenance lookup), or None."""
+        row = self.store.get(event_id)
+        return _to_record(row) if row is not None else None
+
+    def records_after(
+        self, session_id: str, after_seq: int = 0, limit: Optional[int] = None
+    ) -> list[DreamerEventRecord]:
+        """Persisted events with ingest_seq > after_seq, in ingestion order.
+
+        For downstream consumers that must replay or recover side effects after
+        a restart (resume from the last ingest_seq they fully processed).
+        """
+        return [_to_record(row) for row in self.store.query_after_seq(session_id, after_seq, limit)]
+
     def export_jsonl(
         self,
         session_id: str,
