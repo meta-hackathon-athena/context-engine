@@ -322,6 +322,15 @@ JSONL, one record per line, keys sorted:
 - Records are ordered by (`event_time`, availability time, `kind`, `event_id`).
 - Exports are reproducible from SQLite at any time. There is no consolidation or deletion here.
 
+**Consumer reads** (in-process, same record shape):
+
+- `get_event_record(event_id)` returns one persisted event (or `None`), so a downstream
+  record that cites an `event_id` can be checked against the original observation and its
+  `payload_sha256`.
+- `records_after(session_id, after_seq=0, limit=None)` returns events in **ingestion order**
+  with `ingest_seq > after_seq`. A consumer that produces side effects (the Vixy runtime's
+  Episode Writer and Active Agent) uses it to resume or recover after a restart.
+
 ## Integration guide
 
 **Perception owners**
